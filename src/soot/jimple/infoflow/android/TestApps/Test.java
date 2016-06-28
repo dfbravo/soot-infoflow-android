@@ -135,7 +135,7 @@ public class Test {
 	private static String summaryPath = "";
 	private static String resultFilePath = "";
 	
-	private static boolean DEBUG = false;
+	private static boolean DEBUG = true;
 
 	private static IIPCManager ipcManager = null;
 	public static void setIPCManager(IIPCManager ipcManager)

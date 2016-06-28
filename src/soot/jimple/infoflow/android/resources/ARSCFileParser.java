@@ -34,7 +34,7 @@ public class ARSCFileParser extends AbstractResourceParser {
 	
     protected final Logger logger = LoggerFactory.getLogger(getClass());
     
-	private final static boolean DEBUG = false;
+	private final static boolean DEBUG = true;
 
 	protected final static int RES_STRING_POOL_TYPE = 0x0001;
 	protected final static int RES_TABLE_TYPE = 0x0002;

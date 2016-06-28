@@ -262,6 +262,7 @@ public abstract class AbstractCallbackAnalyzer {
 	protected boolean invokesSetContentView(InvokeExpr inv) {
 		String methodName = SootMethodRepresentationParser.v().getMethodNameFromSubSignature(
 				inv.getMethodRef().getSubSignature().getString());
+        System.out.println("INVOKE EXPR: methodName is " + methodName); //DB-DEBUG
 		if (!methodName.equals("setContentView"))
 			return false;
 		
@@ -270,8 +271,11 @@ public abstract class AbstractCallbackAnalyzer {
 		// of using the superclass signature
 		SootClass curClass = inv.getMethod().getDeclaringClass();
 		while (curClass != null) {
+            System.out.println("INVOKE EXPR: declaringClass is " + curClass.toString()); //DB-DEBUG
+//			if (curClass.getName().equals("android.app.Activity")
+//					|| curClass.getName().equals("android.support.v7.app.ActionBarActivity"))
 			if (curClass.getName().equals("android.app.Activity")
-					|| curClass.getName().equals("android.support.v7.app.ActionBarActivity"))
+					|| curClass.getName().equals("android.support.v7.app.ActionBarActivity") || curClass.getName().equals("android.support.v7.app.AppCompatActivity"))
 				return true;
 			if (curClass.declaresMethod("void setContentView(int)"))
 				return false;

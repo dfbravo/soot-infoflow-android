@@ -399,6 +399,7 @@ public class SetupApplication {
 		// Add the callback methods
 		LayoutFileParser lfp = null;
 		if (config.getEnableCallbacks()) {
+            System.out.println("CALLBACKS ENABLED"); //DB-DEBUG
 			if (callbackClasses != null && callbackClasses.isEmpty()) {
 				logger.warn("Callback definition file is empty, disabling callbacks");
 			}
@@ -419,6 +420,9 @@ public class SetupApplication {
 				System.out.println("Found " + lfp.getUserControls() + " layout controls");
 			}
 		}
+        else {
+            System.out.println("CALLBACKS DISABLED"); //DB-DEBUG
+        }
 		
 		System.out.println("Entry point calculation done.");
 
@@ -534,20 +538,28 @@ public class SetupApplication {
 	 */
 	private void collectXmlBasedCallbackMethods(ARSCFileParser resParser,
 			LayoutFileParser lfp, AbstractCallbackAnalyzer jimpleClass) {
+        if (jimpleClass.getLayoutClasses().entrySet().isEmpty()) {
+            System.out.println("No Layout Classes found"); //DB-DEBUG
+        }
 		// Collect the XML-based callback methods
 		for (Entry<String, Set<Integer>> lcentry : jimpleClass.getLayoutClasses().entrySet()) {
 			final SootClass callbackClass = Scene.v().getSootClass(lcentry.getKey());
 
+            System.out.println("CB-CLASS: " + callbackClass.toString()); //DB-DEBUG
+
 			for (Integer classId : lcentry.getValue()) {
+                System.out.println("CB-ID: " + classId); //DB-DEBUG
 				AbstractResource resource = resParser.findResource(classId);
 				if (resource instanceof StringResource) {
 					final String layoutFileName = ((StringResource) resource).getValue();
+                    System.out.println("CB-LOFILE: " + layoutFileName); //DB-DEBUG
 
 					// Add the callback methods for the given class
 					Set<String> callbackMethods = lfp.getCallbackMethods().get(layoutFileName);
 					if (callbackMethods != null) {
 						for (String methodName : callbackMethods) {
 							final String subSig = "void " + methodName + "(android.view.View)";
+                            System.out.println("CB-METHOD: " + subSig); //DB-DEBUG
 
 							// The callback may be declared directly in the
 							// class
@@ -555,8 +567,10 @@ public class SetupApplication {
 							SootClass currentClass = callbackClass;
 							while (true) {
 								SootMethod callbackMethod = currentClass.getMethodUnsafe(subSig);
+                                System.out.println("CB-CURRENTCLASS: " + currentClass.toString()); //DB-DEBUG
 								if (callbackMethod != null) {
 									addCallbackMethod(callbackClass.getName(), new AndroidMethod(callbackMethod));
+                                    System.out.println("^^^ CALL BACK METHOD COMES FROM THIS CLASS ^^^"); //DB-DEBUG
 									break;
 								}
 								if (!currentClass.hasSuperclass()) {
@@ -572,9 +586,14 @@ public class SetupApplication {
 					// For user-defined views, we need to emulate their
 					// callbacks
 					Set<LayoutControl> controls = lfp.getUserControls().get(layoutFileName);
-					if (controls != null)
+					if (controls != null) {
+                        System.out.println("REGISTERING: Start registering callback methods for views"); //DB-DEBUG
 						for (LayoutControl lc : controls)
 							registerCallbackMethodsForView(callbackClass, lc);
+                    }
+                    else {
+                        System.out.println("REGISTERING: No user layout controls to register"); //DB-DEBUG
+                    }
 				} else
 					System.err.println("Unexpected resource type for layout class");
 			}
@@ -644,6 +663,7 @@ public class SetupApplication {
 			return;
 		if (lc.getViewClass().getName().startsWith("android."))
 			return;
+        System.out.println("REGISTERING: " + callbackClass.toString()); //DB-DEBUG
 		
 		// Check whether the current class is actually a view
 		{
@@ -652,6 +672,7 @@ public class SetupApplication {
 			while (sc.hasSuperclass()) {
 				if (sc.getName().equals("android.view.View")) {
 					isView = true;
+                    System.out.println("REGISTERING: ^^^ It is a child of View"); //DB-DEBUG
 					break;
 				}
 				sc = sc.getSuperclass();
@@ -666,19 +687,27 @@ public class SetupApplication {
 		// Android OS class, we treat it as a potential callback.
 		SootClass sc = lc.getViewClass();
 		Set<String> systemMethods = new HashSet<String>(10000);
+        System.out.println("REGISTERING: List of superclasses of " + sc.toString()); //DB-DEBUG
 		for (SootClass parentClass : Scene.v().getActiveHierarchy().getSuperclassesOf(sc)) {
+            System.out.println("REGISTERING:    Superclass" + parentClass.toString()); //DB-DEBUG
 			if (parentClass.getName().startsWith("android."))
 				for (SootMethod sm : parentClass.getMethods())
-					if (!sm.isConstructor())
+					if (!sm.isConstructor()) {
+                        System.out.println("REGISTERING: Adding system method to list" + sm.toString()); //DB-DEBUG
 						systemMethods.add(sm.getSubSignature());
+                    }
 		}
 
 		// Scan for methods that overwrite parent class methods
 		for (SootMethod sm : sc.getMethods())
-			if (!sm.isConstructor())
-				if (systemMethods.contains(sm.getSubSignature()))
+			if (!sm.isConstructor()) {
+                System.out.println("REGISTERING: Checking layoutclass method" + sm.toString()); //DB-DEBUG
+				if (systemMethods.contains(sm.getSubSignature())) {
+                    System.out.println("REGISTERING: ^^^ System method overriden ^^^"); //DB-DEBUG
 					// This is a real callback method
 					addCallbackMethod(callbackClass.getName(), new AndroidMethod(sm));
+                }
+            }
 	}
 
 	/**

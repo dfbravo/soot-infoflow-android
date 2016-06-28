@@ -98,6 +98,7 @@ public class LayoutFileParser extends AbstractResourceParser {
    		for (SootClass parent : Scene.v().getActiveHierarchy().getSuperclassesOf(theClass))
    			if (parent.getName().equals("android.view.ViewGroup")) {
    				found = true;
+                System.out.println("LAYOUTCLASS: " + theClass.toString()); //DB-DEBUG
    				break;
    			}
    		return found;
@@ -113,6 +114,7 @@ public class LayoutFileParser extends AbstractResourceParser {
    		for (SootClass parent : Scene.v().getActiveHierarchy().getSuperclassesOfIncluding(theClass))
    			if (parent.getName().equals("android.view.View")
    					|| parent.getName().equals("android.webkit.WebView")) {
+                System.out.println("VIEWCLASS: " + theClass.toString() + " PARENT: " + parent.toString()); //DB-DEBUG
    				found = true;
    				break;
    			}
@@ -270,7 +272,9 @@ public class LayoutFileParser extends AbstractResourceParser {
 			}
 		}
 		else {
+            System.out.println("TAGNAME: " + tname); //DB-DEBUG
 			final SootClass childClass = getLayoutClass(tname);
+            System.out.println("TAGNAMECLASS: " + tname.toString()); //DB-DEBUG
 			if (childClass != null && (isLayoutClass(childClass) || isViewClass(childClass)))
 				parseLayoutAttributes(layoutFile, childClass, rootNode);
 		}
@@ -368,6 +372,7 @@ public class LayoutFileParser extends AbstractResourceParser {
 					&& attr.getType() == AxmlVisitor.TYPE_STRING
 					&& attr.getValue() instanceof String) {
 				String strData = ((String) attr.getValue()).trim();
+                System.out.println("ONCLICK: " + attrName + " " + strData); //DB-DEBUG
 				addCallbackMethod(layoutFile, strData);
 			}
 			else if (attr.getType() == AxmlVisitor.TYPE_STRING && attrName.equals("text")) {
@@ -379,6 +384,7 @@ public class LayoutFileParser extends AbstractResourceParser {
 		}
 		
 		// Register the new user control
+        System.out.println("USERCONTROL: " + layoutClass.toString() + " SENSITIVE: " + isSensitive); //DB-DEBUG
 		addToMapSet(this.userControls, layoutFile, new LayoutControl(id, layoutClass, isSensitive));
 	}
 

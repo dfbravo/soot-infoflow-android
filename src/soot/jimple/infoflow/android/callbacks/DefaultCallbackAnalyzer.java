@@ -164,7 +164,9 @@ public class DefaultCallbackAnalyzer extends AbstractCallbackAnalyzer {
 					Stmt stmt = (Stmt) u;
 					if (stmt.containsInvokeExpr()) {
 						InvokeExpr inv = stmt.getInvokeExpr();
+                        System.out.println("INVOKE EXPR: " + inv.toString()); //DB-DEBUG
 						if (invokesSetContentView(inv)) {
+                            System.out.println("INVOKE EXPR: It is setContentView"); //DB-DEBUG
 							for (Value val : inv.getArgs())
 								if (val instanceof IntConstant) {
 									IntConstant constVal = (IntConstant) val;
@@ -176,6 +178,9 @@ public class DefaultCallbackAnalyzer extends AbstractCallbackAnalyzer {
 									layoutIDs.add(constVal.value);
 								}
 						}
+                        else {
+                            System.out.println("INVOKE EXPR: Not setContentView"); //DB-DEBUG
+                        }
 					}
 				}
 		}
